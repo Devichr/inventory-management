@@ -3,16 +3,15 @@
 @section('content')
     <div class="container-xxl flex-grow-1 container-p-y">
         <div class="row">
-            <div class="col-lg-8 mb-4 order-0">
+            <div class="col-lg-6 mb-4 order-0">
                 <div class="card">
                     <div class="d-flex align-items-end row">
                         <div class="col-sm-7">
                             <div class="card-body">
                                 <h5 class="card-title text-primary">Welcome {{ Auth::user()->name }}</h5>
                                 <p class="mb-4">
-                                    Sekarang sudah ada <span class="fw-bold">{{ $orderThisWeek }}</span> Order baru minggu
-                                    ini silahkan
-                                    masuk ke halaman order untuk melihat atau menambah order
+                                    Silahkan gunakan menu di sebelah kiri untuk navigasi dan kamu bisa melihat data terkini
+                                    di dashboard ini
                                 </p>
                             </div>
                         </div>
@@ -23,6 +22,55 @@
                                     data-app-light-img="illustrations/man-with-laptop-light.png" />
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 col-md-12 col-12 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h2>Predictions</h2>
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Fabric</th>
+                                    <th>Predicted Demand</th>
+                                    <th>Prediction Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($predictions as $prediction)
+                                    <tr>
+                                        <td>{{ $prediction->fabric->name }}</td>
+                                        <td>{{ $prediction->predicted_demand }}</td>
+                                        <td>{{ $prediction->prediction_date }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <!-- Kolom untuk Total Revenue -->
+            <div class="col-8 col-lg-8 mb-4">
+                <div class="card">
+                    <div class="row row-bordered g-0">
+                        <div class="col-md-8">
+                            <h5 class="card-header m-0 me-2 pb-3">EOQ vs Order</h5>
+                            <div id="eoqOrderChart" class="px-2"></div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card-body">
+                                <div class="text-center">
+                                    Pertumbuhan Order
+                                </div>
+                            </div>
+                            <!-- Kolom untuk Growth -->
+                            <div id="stockGrowthChart" class="py-3"></div>
+                            <div class="text-center fw-semibold pt-3 mb-2">{{ $thisMonthOrders }} Order Baru bulan ini</div>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -38,8 +86,8 @@
                                     </div>
 
                                 </div>
-                                <span class="fw-semibold d-block mb-1">Orders</span>
-                                <h3 class="card-title mb-2">{{ $ordersCount }}</h3>
+                                <span class="fw-semibold d-block mb-1">Fabric</span>
+                                <h3 class="card-title mb-2">{{ $fabricCount }}</h3>
                             </div>
                         </div>
                     </div>
@@ -53,68 +101,68 @@
                                     </div>
 
                                 </div>
-                                <span>Sales</span>
-                                <h3 class="card-title text-nowrap mb-1">{{ $stockCount }}</h3>
+                                <span>Usage</span>
+                                <h3 class="card-title text-nowrap mb-1">{{ $usageSum }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                    {{-- Simpen notif disini --}}
+                    <div class="col-lg-12 col-md-12 mb-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Notifications</h5>
+                                @if ($notifications->isEmpty())
+                                    <p>No new notifications.</p>
+                                @else
+                                    <ul class="list-group">
+                                        @foreach ($notifications as $notification)
+                                            <li class="list-group-item">
+                                                <div class="notification {{ $notification->is_read ? 'read' : 'unread' }}">
+                                                    <p>{{ $notification->message }}</p>
+                                                    @if (!$notification->is_read)
+                                                        <form action="{{ route('notifications.read', $notification->id) }}"
+                                                            method="POST">
+                                                            @csrf
+                                                            @method('PATCH')
+                                                            <button type="submit" class="btn btn-sm btn-primary">Mark as
+                                                                Read</button>
+                                                        </form>
+                                                    @endif
+                                                </div>
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                @endif
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="row">
-            <!-- Kolom untuk Total Revenue -->
-            <div class="col-12 col-lg-8 mb-4">
-                <div class="card">
-                    <div class="row row-bordered g-0">
-                        <div class="col-md-12">
-                            <h5 class="card-header m-0 me-2 pb-3">Total Revenue</h5>
-                            <div id="stockChart" class="px-2"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    </div>
 
-            <!-- Kolom untuk Growth -->
-            <div class="col-12 col-lg-4 mb-4">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="text-center">
-                            <h5>Growth</h5>
-                        </div>
-                        <div id="orderGrowthChart" class="py-3"></div>
-                        <div class="text-center fw-semibold pt-3 mb-2">{{$thisMonthOrders}} Order Baru bulan ini</div>
-                    </div>
-                </div>
-            </div>
-        </div>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <script>
-
-
         (function() {
-            // Definisikan warna jika config tidak ada
-            const cardColor = '#FFFFFF'; // Warna latar belakang kartu
-            const headingColor = '#000000'; // Warna judul
-            const axisColor = '#9E9E9E'; // Warna sumbu
-            const borderColor = '#E0E0E0'; // Warna border
+            const cardColor = '#FFFFFF';
+            const headingColor = '#000000';
+            const axisColor = '#9E9E9E';
+            const borderColor = '#E0E0E0';
 
-            const ordersData = @json($orders);
-            const stockInData = @json($stockIn);
+            const eoqData = @json($usageData);
+            const orderData = @json($orderData);
 
             const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-            //Chart perbandingan order dan stock
-            const totalRevenueChartEl = document.querySelector('#stockChart');
-            const totalRevenueChartOptions = {
+            const eoqOrderChartEl = document.querySelector('#eoqOrderChart');
+            const eoqOrderChartOptions = {
                 series: [{
-                        name: 'Stock In',
-                        data: months.map((month, index) => stockInData[index + 1] ||
-                            0) // Ambil data sesuai bulan
+                        name: 'Usage',
+                        data: months.map((month, index) => eoqData[index + 1] || 0)
                     },
                     {
                         name: 'Orders',
-                        data: months.map((month, index) => ordersData[index + 1] ||
-                            0) // Ambil data sesuai bulan
+                        data: months.map((month, index) => orderData[index + 1] || 0)
                     }
                 ],
                 chart: {
@@ -134,7 +182,7 @@
                         endingShape: 'rounded'
                     }
                 },
-                colors: ['#008FFB', '#FEB019'], // Ganti dengan warna dari config jika ada
+                colors: ['#008FFB', '#FEB019'],
                 dataLabels: {
                     enabled: false
                 },
@@ -207,107 +255,84 @@
                 }
             };
 
-            if (totalRevenueChartEl !== null) {
-                const totalRevenueChart = new ApexCharts(totalRevenueChartEl, totalRevenueChartOptions);
-                totalRevenueChart.render();
+            if (eoqOrderChartEl !== null) {
+                const eoqOrderChart = new ApexCharts(eoqOrderChartEl, eoqOrderChartOptions);
+                eoqOrderChart.render();
             }
 
-            const growthChartEl = document.querySelector('#orderGrowthChart');
+            const stockGrowthChartEl = document.querySelector('#stockGrowthChart');
 
-        // Data dari controller
-        const ordersDataGrowth = @json($orders);
+            const lastMonthStock = @json($lastMonthStock);
+            const thisMonthStock = @json($thisMonthStock);
 
-        // Ambil order bulan lalu dan bulan ini
-        const lastMonthOrders = @json($lastMonthOrders);
-        const thisMonthOrders = @json($thisMonthOrders);
+            let stockGrowthPercentage;
+            if (lastMonthStock === 0 && thisMonthStock > 0) {
+                stockGrowthPercentage = 100;
+            } else if (lastMonthStock === 0 && thisMonthStock === 0) {
+                stockGrowthPercentage = 0;
+            } else {
+                stockGrowthPercentage = ((thisMonthStock - lastMonthStock) / lastMonthStock) * 100;
+            }
 
-        // Hitung growth
-        let growthPercentage;
-        if (lastMonthOrders === 0 && thisMonthOrders > 0) {
-            growthPercentage = 100; // Pertumbuhan maksimum jika dari 0 ke angka positif
-        } else if (lastMonthOrders === 0 && thisMonthOrders === 0) {
-            growthPercentage = 0; // Tidak ada pertumbuhan jika keduanya 0
-        } else {
-            growthPercentage = ((thisMonthOrders - lastMonthOrders) / lastMonthOrders) * 100;
-        }
-
-        // Menyiapkan data chart
-        const growthChartOptions = {
-            series: [growthPercentage],
-            labels: ['Growth'],
-            chart: {
-                height: 240,
-                type: 'radialBar'
-            },
-            plotOptions: {
-                radialBar: {
-                    size: 150,
-                    offsetY: 10,
-                    startAngle: -150,
-                    endAngle: 150,
-                    hollow: {
-                        size: '55%'
-                    },
-                    track: {
-                        background: '#f2f2f2', // Warna track jika perlu
-                        strokeWidth: '100%'
-                    },
-                    dataLabels: {
-                        name: {
-                            offsetY: 15,
-                            color: '#333', // Warna nama
-                            fontSize: '15px',
-                            fontWeight: '600'
+            const stockGrowthChartOptions = {
+                series: [stockGrowthPercentage],
+                labels: ['Growth'],
+                chart: {
+                    height: 240,
+                    type: 'radialBar'
+                },
+                plotOptions: {
+                    radialBar: {
+                        size: 150,
+                        offsetY: 10,
+                        startAngle: -150,
+                        endAngle: 150,
+                        hollow: {
+                            size: '55%'
                         },
-                        value: {
-                            offsetY: -25,
-                            color: '#333', // Warna nilai
-                            fontSize: '22px',
-                            fontWeight: '500'
+                        track: {
+                            background: '#f2f2f2',
+                            strokeWidth: '100%'
+                        },
+                        dataLabels: {
+                            name: {
+                                offsetY: 15,
+                                color: '#333',
+                                fontSize: '15px',
+                                fontWeight: '600'
+                            },
+                            value: {
+                                offsetY: -25,
+                                color: '#333',
+                                fontSize: '22px',
+                                fontWeight: '500'
+                            }
                         }
                     }
-                }
-            },
-            colors: ['#00E396'], // Warna chart
-            fill: {
-                type: 'gradient',
-                gradient: {
-                    shade: 'dark',
-                    shadeIntensity: 0.5,
-                    gradientToColors: ['#00E396'],
-                    inverseColors: true,
-                    opacityFrom: 1,
-                    opacityTo: 0.6,
-                    stops: [30, 70, 100]
-                }
-            },
-            stroke: {
-                dashArray: 5
-            },
-            grid: {
-                padding: {
-                    top: -35,
-                    bottom: -10
-                }
-            },
-            states: {
-                hover: {
-                    filter: {
-                        type: 'none'
+                },
+                colors: ['#00E396'],
+                fill: {
+                    type: 'gradient',
+                    gradient: {
+                        shade: 'dark',
+                        shadeIntensity: 0.5,
+                        gradientToColors: ['#00E396'],
+                        inverseColors: true,
+                        opacityFrom: 1,
+                        opacityTo: 0.6,
+                        stops: [0, 100]
                     }
                 },
-                active: {
-                    filter: {
-                        type: 'none'
-                    }
+                stroke: {
+                    lineCap: 'round'
                 }
-            }
-        };
+            };
 
-        if (growthChartEl !== undefined && growthChartEl !== null) {
-            const growthChart = new ApexCharts(growthChartEl, growthChartOptions);
-            growthChart.render();
-        }
+            if (stockGrowthChartEl !== null) {
+                const stockGrowthChart = new ApexCharts(stockGrowthChartEl, stockGrowthChartOptions);
+                stockGrowthChart.render();
+            }
+
         })();
     </script>
 @endsection

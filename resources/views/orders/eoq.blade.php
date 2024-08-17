@@ -2,8 +2,7 @@
 
 @section('content')
 <div class="container">
-    <h1>Calculate EOQ for Order {{ $order->id }}</h1>
-    <form method="POST" action="{{ route('orders.eoq.calculate', $order->id) }}">
+    <form method="POST" action="{{ route('orders.eoq.calculate') }}">
         @csrf
         <div class="mb-3">
             <label for="demand_rate" class="form-label">Annual Demand Rate (D)</label>

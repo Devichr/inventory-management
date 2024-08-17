@@ -70,31 +70,43 @@
                             <div data-i18n="Analytics">Dashboard</div>
                         </a>
                     </li>
+                    <li class="{{ request()->routeIs('fabrics.index') ? 'active' : '' }} menu-item">
+                        <a href="{{ route('fabrics.index') }}" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-home-circle"></i>
+                            <div data-i18n="Analytics">Kelola Kain</div>
+                        </a>
+                    </li>
+                    <li class="{{ request()->routeIs('stocks.index') ? 'active' : '' }} menu-item">
+                        <a href="{{ route('stocks.index') }}" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-home-circle"></i>
+                            <div data-i18n="Analytics">Stock</div>
+                        </a>
+                    </li>
                     @if (auth()->user()->role === 'warehouse_admin')
-                        <li class="{{ request()->routeIs('admin.stock') ? 'active' : '' }} menu-item">
-                            <a href="{{ route('admin.stock') }}" class="menu-link">
-                                <i class="menu-icon tf-icons bx bx-home-circle"></i>
-                                <div data-i18n="Analytics">Stock</div>
-                            </a>
-                        </li>
-                        <li class="{{ request()->routeIs('orders.admin') ? 'active' : '' }} menu-item">
-                            <a href="{{ route('orders.admin') }}" class="menu-link">
+                        <li class="{{ request()->routeIs('orders.create') ? 'active' : '' }} menu-item">
+                            <a href="{{ route('orders.create') }}" class="menu-link">
                                 <i class="menu-icon tf-icons bx bx-home-circle"></i>
                                 <div data-i18n="Analytics">Orders</div>
+                            </a>
+                        </li>
+                        <li class="{{ request()->routeIs('fabric_usage.create') ? 'active' : '' }} menu-item">
+                            <a href="{{ route('fabric_usage.create') }}" class="menu-link">
+                                <i class="menu-icon tf-icons bx bx-home-circle"></i>
+                                <div data-i18n="Analytics">Gunakan Kain</div>
+                            </a>
+                        </li>
+                        <li class="{{ request()->routeIs('reports.index') ? 'active' : '' }} menu-item">
+                            <a href="{{ route('reports.index') }}" class="menu-link">
+                                <i class="menu-icon tf-icons bx bx-home-circle"></i>
+                                <div data-i18n="Analytics">Laporan</div>
                             </a>
                         </li>
                     @endif
                     @if (auth()->user()->role === 'purchase_officer')
-                        <li class="{{ request()->routeIs('ViewStock') ? 'active' : '' }} menu-item">
-                            <a href="{{ route('viewStock') }}" class="menu-link">
+                        <li class="{{ request()->routeIs('eoq.index') ? 'active' : '' }} menu-item">
+                            <a href="{{ route('eoq.index') }}" class="menu-link">
                                 <i class="menu-icon tf-icons bx bx-home-circle"></i>
-                                <div data-i18n="Analytics">Stock</div>
-                            </a>
-                        </li>
-                        <li class="{{ request()->routeIs('orders.index') ? 'active' : '' }} menu-item">
-                            <a href="{{ route('orders.index') }}" class="menu-link">
-                                <i class="menu-icon tf-icons bx bx-home-circle"></i>
-                                <div data-i18n="Analytics">Orders</div>
+                                <div data-i18n="Analytics">Calculate EOQ</div>
                             </a>
                         </li>
                     @endif

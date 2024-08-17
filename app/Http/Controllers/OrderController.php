@@ -2,49 +2,57 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Order;
-use App\Models\User;
+use App\Models\Stock;
+use App\Models\Cost;
+use Illuminate\Http\Request;
 
 class OrderController extends Controller
 {
-    public function index()
+    public function create()
     {
-        $orders = Order::all();
-        return view('admin.orders', compact('orders'));
-    }
-    public function order()
-    {
-        $orders = Order::all();
-        return view('orders', compact('orders'));
+        $fabrics = Stock::with('fabric')->get();
+        return view('orders.create', compact('fabrics'));
     }
 
-    public function showEOQForm($orderId)
-    {
-        $order = Order::findOrFail($orderId);
-        return view('orders.eoq', compact('order'));
-    }
-
-    public function calculateEOQ(Request $request, $orderId)
+    public function store(Request $request)
     {
         $request->validate([
-            'demand_rate' => 'required|numeric',
-            'ordering_cost' => 'required|numeric',
-            'holding_cost' => 'required|numeric',
+            'fabric_id' => 'required|exists:stocks,fabric_id',
+            'quantity_ordered' => 'required|integer|min:1',
+            'order_date' => 'required|date',
+            'arrival_date' => 'nullable|date',
+            'cost' => 'required|numeric',
         ]);
 
-        $D = $request->input('demand_rate'); // Annual demand rate
-        $S = $request->input('ordering_cost'); // Ordering cost per order
-        $H = $request->input('holding_cost'); // Holding cost per unit per year
+        $order = Order::create([
+            'fabric_id' => $request->fabric_id,
+            'quantity_ordered' => $request->quantity_ordered,
+            'order_date' => $request->order_date,
+            'arrival_date' => $request->arrival_date,
+            'cost' => $request->cost,
+        ]);
 
-        // Formula EOQ: √(2DS/H)
-        $EOQ = sqrt((2 * $D * $S) / $H);
+        // Perbarui stok jika kain telah tiba
+        if ($request->arrival_date) {
+            $stock = Stock::where('fabric_id', $request->fabric_id)->first();
+            $new_quantity = $stock->quantity + $request->quantity_ordered;
+            $stock->update(['quantity' => $new_quantity]);
+        }
 
-        $order = Order::findOrFail($orderId);
-        $order->eoq = $EOQ;
-        $order->save();
+        Cost::create([
+            'fabric_id' => $order->fabric_id,
+            'order_cost' => $order->cost,
+            'holding_cost' => 0, // Asumsikan ini adalah biaya pemesanan awal, tidak ada holding cost
+            'date' => $order->order_date,
+        ]);
 
-        return view('orders.eoq', compact('order', 'EOQ'))->with('status', 'EOQ calculated and saved.');
+        return redirect()->route('dashboard')->with('success', 'Pemesanan kain berhasil dicatat.');
     }
 
+    public function index()
+    {
+        $orders = Order::with('fabric')->get();
+        return view('orders.index', compact('orders'));
+    }
 }

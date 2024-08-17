@@ -12,7 +12,6 @@
                 <th>Product</th>
                 <th>Quantity</th>
                 <th>Status</th>
-                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -23,9 +22,6 @@
                 <td>{{ $order->product_name }}</td>
                 <td>{{ $order->quantity }}</td>
                 <td>{{ $order->status }}</td>
-                <td>
-                    <a href="{{ route('orders.eoq.calculate', $order->id) }}" class="btn btn-success">Calculate EOQ</a>
-                </td>
             </tr>
             @endforeach
         </tbody>

@@ -5,14 +5,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Stock extends Model
+class FabricUsage extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'fabric_id',
-        'quantity',
-        'reorder_point',
+        'quantity_used',
+        'date',
+        'remaining_stock',
     ];
 
     public function fabric()

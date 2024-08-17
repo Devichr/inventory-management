@@ -2,58 +2,57 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Models\Fabric;
 use App\Models\Stock;
+use Illuminate\Http\Request;
 
 class StockController extends Controller
 {
     public function index()
     {
-        $stocks = Stock::all();
-        return view('admin.stock', compact('stocks'));
-    }
-    public function stock()
-    {
-        $stocks = Stock::all();
-        return view('stock', compact('stocks'));
+        $stocks = Stock::with('fabric')->get();
+        return view('stocks.index', compact('stocks'));
     }
 
-    public function showAddStockForm()
+    public function create()
     {
-        return view('admin.add-stock');
+        $fabrics = Fabric::all();
+        return view('stocks.create', compact('fabrics'));
     }
 
-    public function storeStock(Request $request)
+    public function store(Request $request)
     {
         $request->validate([
-            'fabric_type' => 'required|string|max:255',
+            'fabric_id' => 'required|exists:fabrics,id',
             'quantity' => 'required|integer',
-            'location' => 'required|string|max:255',
+            'reorder_point' => 'required|integer',
         ]);
 
         Stock::create($request->all());
-
-        return redirect()->route('admin.stock')->with('success', 'Stock updated successfully');
+        return redirect()->route('stocks.index')->with('success', 'Stock added successfully');
     }
 
-    public function editStock($id)
+    public function edit(Stock $stock)
     {
-        $stock = Stock::findOrFail($id);
-        return view('admin.edit-stock', compact('stock'));
+        $fabrics = Fabric::all();
+        return view('stocks.edit', compact('stock', 'fabrics'));
     }
 
-    public function updateStock(Request $request, $id)
+    public function update(Request $request, Stock $stock)
     {
         $request->validate([
-            'fabric_type' => 'required|string|max:255',
+            'fabric_id' => 'required|exists:fabrics,id',
             'quantity' => 'required|integer',
-            'location' => 'required|string|max:255',
+            'reorder_point' => 'required|integer',
         ]);
 
-        $stock = Stock::findOrFail($id);
         $stock->update($request->all());
+        return redirect()->route('stocks.index')->with('success', 'Stock updated successfully');
+    }
 
-        return redirect()->route('admin.stock')->with('success', 'Stock updated successfully');
+    public function destroy(Stock $stock)
+    {
+        $stock->delete();
+        return redirect()->route('stocks.index')->with('success', 'Stock deleted successfully');
     }
 }
-

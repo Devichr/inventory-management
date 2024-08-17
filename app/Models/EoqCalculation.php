@@ -5,14 +5,21 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Stock extends Model
+class EOQCalculation extends Model
 {
     use HasFactory;
 
+    protected $table = 'eoq_calculations' ;
+
     protected $fillable = [
         'fabric_id',
-        'quantity',
+        'annual_demand',
+        'order_cost',
+        'holding_cost',
+        'eoq',
+        'total_cost',
         'reorder_point',
+        'calculation_date',
     ];
 
     public function fabric()

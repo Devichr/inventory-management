@@ -6,7 +6,6 @@
         <h2 class="card-header">Stock</h2>
         <div class="d-flex justify-content-between p">
             <button id="download-pdf" class="btn btn-danger mb-3">Download PDF</button>
-            <a href="{{route('admin.add-stock')}}" class="btn btn-success mb-3">Add Stock</a>
         </div>
         <table id="stock-table" class="table table-bordered">
             <thead>
@@ -14,7 +13,6 @@
                     <th>Fabric Type</th>
                     <th>Quantity</th>
                     <th>Location</th>
-                    <th class="no-export">Update Stok</th>
                 </tr>
             </thead>
             <tbody>
@@ -23,9 +21,6 @@
                         <td>{{ $stock->fabric_type }}</td>
                         <td>{{ $stock->quantity }}</td>
                         <td>{{ $stock->location }}</td>
-                        <td class="no-export">
-                            <a href="{{route('admin.edit-stock', $stock->id)}}" class="btn btn-success">Update Stock</a>
-                        </td>
                     </tr>
                 @endforeach
             </tbody>
@@ -39,8 +34,6 @@
         document.getElementById('download-pdf').addEventListener('click', function() {
             const { jsPDF } = window.jspdf;
 
-            const actionCells = document.querySelectorAll('.no-export');
-            actionCells.forEach(cell => cell.style.display = 'none');
 
             const stockTable = document.getElementById('stock-table');
 
@@ -52,7 +45,6 @@
 
                     pdf.addImage(imgData, 'PNG', 10, 10, 580, 0);
 
-                    actionCells.forEach(cell => cell.style.display = '');
 
                     pdf.save('stock-list.pdf');
                 }

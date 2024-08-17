@@ -19,8 +19,8 @@ class User extends Authenticatable
         'password', 'remember_token',
     ];
 
-    public function orders()
+    public function notifications()
     {
-        return $this->hasMany(Order::class);
+        return $this->hasMany(Notification::class);
     }
 }

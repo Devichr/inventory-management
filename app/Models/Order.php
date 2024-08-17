@@ -10,11 +10,16 @@ class Order extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id', 'product_name', 'quantity', 'status', 'eoq',
+        'fabric_id',
+        'quantity_ordered',
+        'order_date',
+        'arrival_date',
+        'cost',
     ];
 
-    public function user()
+    // Relasi dengan model Fabric
+    public function fabric()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Fabric::class);
     }
 }
